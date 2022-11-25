@@ -1,18 +1,590 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="wrap">
+    <!-- welcome -->
+    <div class="welcome" v-if="step === 0">
+      <div class="welcome-logo"></div>
+      <p class="welcome-name">Motionverse</p>
+      <p class="welcome-desc">{{desc}}</p>
+      <van-button round @click="onExperience" class="welcome-btn">立即体验</van-button>
+    </div>
+
+    <!-- loading -->
+    <div class="loading" v-if="step === 1">
+      <van-loading type="spinner" size="40px" vertical color="#666666" text-size="14px">{{loadingNum}}%</van-loading>
+    </div>
+
+    <!-- stage -->
+    <div class="stage" v-if="step === 1 || step === 2">
+      <!-- http://192.168.10.105:5500/index.html -->
+      <!-- https://demo.deepscience.cn/poc/index.html -->
+      <iframe src="https://demo.deepscience.cn/poc/index.html" frameborder="0" ref="iframeDom" allow="autoplay" id="iframeDom"></iframe>
+      <div class="header">
+        Motionverse 示例
+        <div class="config-btn">
+          <span @click="configShow = true" class="setting-ico"></span>
+          <van-action-sheet v-model:show="configShow" cancel-text="取消" :actions="actions" @select="onSelect" />
+        </div>
+      </div>
+
+      <div class="buttom-bar">
+        <div class="quick-bar" v-if="stageType == 2">
+          <p class="tag-title">您可以问以下问题：</p>
+          <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('平台介绍')">平台介绍</van-tag>
+          <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('技术介绍')">技术介绍</van-tag>
+          <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('业务介绍')">业务介绍</van-tag>
+        </div>
+        <div class="option-bar">
+          <!-- 播报 -->
+          <div v-if="stageType == 1">
+            <div v-if="boardcastType" class="bottom-option">
+              <div @click="changeBoardcastType" class="ico keybord"></div>
+              <van-button @click="boardcastOutData" round class="out-btn">点击播报语音文件</van-button>
+            </div>
+            <div v-if="!boardcastType" class="bottom-option">
+              <div @click="changeBoardcastType" class="ico keybord"></div>
+              <van-field v-model="boardcastText" placeholder="请输入播报文字" class="bottom-text" />
+              <van-button @click="onBoardcast" type="primary" class="bottom-btn">发送</van-button>
+            </div>
+          </div>
+          <!-- 问答 -->
+          <div v-if="stageType == 2">
+            <div v-if="qaType" class="bottom-option">
+              <div @click="changeQaType" class="ico keybord"></div>
+              <van-button @touchstart="onRecordStart" @touchend="onRecordEnd" round class="out-btn record-btn" :class="{active: recordStatus}">长按说话</van-button>
+            </div>
+            <div v-if="!qaType" class="bottom-option">
+              <div @click="changeQaType" class="ico mic"></div>
+              <van-field v-model="qaText" placeholder="请输入问题文字" class="bottom-text" />
+              <van-button @click="onQa" type="primary" class="bottom-btn">发送</van-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <van-loading type="spinner" size="40px" vertical color="#666666" text-size="14px" class="interactiveLoading" v-if="interactiveLoading"></van-loading>
+    </div>
   </div>
+
+  <!-- 弹出层 -->
+  <van-popup v-model:show="popupShow" position="bottom" round>
+    <div class="popup-wrap">
+      <h6>{{popupTitle}}</h6>
+      <!-- 数字人更换 -->
+      <div v-if="popupIndex === 0">
+        <van-radio-group v-model="role" direction="horizontal" class="role-item-group">
+          <van-radio name="0" class="role-item">
+            <template #icon="props">
+              <img src="../assets/role0.jpg" :data-alt="props">
+              <p>楚楚</p>
+            </template>
+          </van-radio>
+          <van-radio name="1" class="role-item">
+            <template #icon="props">
+              <img src="../assets/role1.jpg" :data-alt="props">
+              <p>男青年</p>
+            </template>
+          </van-radio>
+          <van-radio name="2" class="role-item">
+            <template #icon="props">
+              <img src="../assets/role2.jpg" :data-alt="props">
+              <p>小老虎</p>
+            </template>
+          </van-radio>
+        </van-radio-group>
+        <van-button @click="changeRole" class="submit-btn" size="normal">确定</van-button>
+      </div>
+
+      <!-- 交互类型更换 -->
+      <div v-if="popupIndex === 1">
+        <van-radio-group v-model="type">
+          <van-radio :name="1" class="type-item">
+            <template #icon="props">
+              <div :id="props">
+                播报
+              </div>
+            </template>
+          </van-radio>
+          <van-radio :name="2" class="type-item">
+            <template #icon="props">
+              <div :id="props">
+                问答
+              </div>
+            </template>
+          </van-radio>
+        </van-radio-group>
+        <van-button @click="changeType" class="submit-btn" size="normal">确定</van-button>
+      </div>
+
+      <!-- 关于示例 -->
+      <div v-if="popupIndex === 2">
+        <div class="about-banner">
+          <div class="about-left">
+            <div class="about-logo"></div>
+            <div class="about-name">Motionverse</div>
+          </div>
+          <div>Version 1.0</div>
+        </div>
+        <p class="about-text">{{desc}}</p>
+      </div>
+    </div>
+
+  </van-popup>
 </template>
 
-<script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+<script setup>
+import { ref, watch, onMounted } from 'vue'
+import { Toast } from 'vant'
+import Recorder from 'recorder-core/recorder.wav.min'
 
-export default {
-  name: 'HomeView',
-  components: {
-    HelloWorld
+const desc = ref(
+  'Motionverse数字人开放平台提供数字人 PaaS & SaaS 解决方案，支持以文本、语音、动作等多种方式通过AI智能算法来驱动数字人。提供给客户标准的 PaaS 接口与 SaaS 运营工具，方便客户将数字人能力集成进不同的终端与场景。主要面对的行业包括新零售、政务、金融、运营商、传媒、游戏等，场景包括数字人信息播报等。'
+)
+
+const step = ref(0) // 0:welcome 1:加载 2:demo
+const onExperience = () => {
+  step.value = 1
+}
+
+// unity 加载
+const loadingNum = ref(0)
+watch(loadingNum, (newValue, oldValue) => {
+  if (newValue >= 100) {
+    step.value = 2
+  }
+})
+
+/**
+ * 设置菜单相关
+ */
+const configShow = ref(false)
+const actions = [{ name: '数字人更换' }, { name: '交互类型更换' }, { name: '关于示例' }]
+const onSelect = (item, index) => {
+  configShow.value = false
+  popupIndex.value = index
+  popupTitle.value = item.name
+  popupShow.value = true
+  // 同步选项数据
+  role.value = stageRole.value
+  type.value = stageType.value
+}
+
+// 弹出层
+const popupTitle = ref('')
+const popupIndex = ref(0)
+const popupShow = ref(false)
+
+// 更换数字人
+const role = ref('0')
+const stageRole = ref('0')
+const changeRole = () => {
+  stageRole.value = role.value
+  popupShow.value = false
+  iframeDom.value.contentWindow.postMessage({ type: 'ChangeCharacter', data: stageRole.value }, '*')
+}
+
+// 更换交互类型
+const type = ref(1)
+const stageType = ref(1)
+const changeType = () => {
+  stageType.value = type.value
+  popupShow.value = false
+  // console.log('交互类型' + stageType.value)
+}
+
+/**
+ * 播报
+ */
+const boardcastType = ref(true)
+const boardcastText = ref('')
+const changeBoardcastType = () => {
+  boardcastType.value = !boardcastType.value
+}
+
+const outData = ['https://ds-model-tts.oss-cn-beijing.aliyuncs.com/temp/166919193808772872.wav', 'https://ds-model-tts.oss-cn-beijing.aliyuncs.com/temp/166919195695082899.wav', 'https://ds-model-tts.oss-cn-beijing.aliyuncs.com/temp/166919196901136380.wav']
+const boardcastOutData = () => {
+  // interactiveLoading.value = true
+  iframeDom.value.contentWindow.postMessage({ type: 'AudioBroadcast', data: outData[parseInt(stageRole.value)] }, '*')
+}
+const onBoardcast = () => {
+  if (boardcastText.value != '') {
+    // interactiveLoading.value = true
+    iframeDom.value.contentWindow.postMessage({ type: 'TextBroadcast', data: boardcastText.value }, '*')
+    boardcastText.value = ''
+  } else {
+    Toast('请输入文字')
   }
 }
+
+/**
+ * 问答
+ */
+const qaType = ref(true)
+const qaText = ref('')
+const changeQaType = () => {
+  qaType.value = !qaType.value
+}
+const onQa = () => {
+  if (qaText.value != '') {
+    console.log(qaText.value)
+    // interactiveLoading.value = true
+    iframeDom.value.contentWindow.postMessage({ type: 'TextAnswerMotion', data: qaText.value }, '*')
+    qaText.value = ''
+  } else {
+    Toast('请输入文字')
+  }
+}
+
+// 录音
+const rec = ref(null)
+const recordStatus = ref(false)
+const onRecordStart = e => {
+  e.preventDefault()
+  recordStatus.value = true
+  rec.value = null
+  let newRec = Recorder({
+    type: 'wav',
+    sampleRate: 16000,
+    bitRate: 24
+  })
+  newRec.open(
+    () => {
+      rec.value = newRec
+      console.log(rec)
+      rec.value.start()
+      console.log('开始录音')
+    },
+    err => {
+      console.log('录音权限已拒绝' + err)
+    }
+  )
+}
+
+const blobToDataUrl = blob => {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader()
+    reader.readAsDataURL(blob)
+    reader.onload = e => resolve(e.target.result)
+    reader.onerror = err => reject(err)
+  })
+}
+
+const onRecordEnd = () => {
+  recordStatus.value = false
+  rec.value.stop(
+    (blob, duration) => {
+      console.log(`已录制${duration}ms，${blob.size}字节`)
+      blobToDataUrl(blob)
+        .then(base64 => {
+          const _base64 = base64.split('data:audio/wav;base64,')[1]
+          // console.log(_base64)
+          // interactiveLoading.value = true
+          iframeDom.value.contentWindow.postMessage({ type: 'AudioAnswerMotion', data: _base64 }, '*')
+        })
+        .catch(err => {
+          console.log('录音错误:' + err)
+        })
+      // let audioRes = {
+      //   blob,
+      //   size: blob.size
+      // }
+
+      // console.log(audioRes)
+      // var audio = document.createElement('audio')
+      // audio.controls = true
+      // document.body.appendChild(audio)
+      // //简单利用URL生成播放地址，注意不用了时需要revokeObjectURL，否则霸占内存
+      // audio.src = (window.URL || webkitURL).createObjectURL(blob)
+      // audio.play()
+      rec.value.close()
+      rec.value = null
+    },
+    err => {
+      console.log('录音失败：' + err)
+      rec.value.close()
+      rec.value = null
+    }
+  )
+}
+
+const iframeDom = ref()
+onMounted(() => {
+  window.addEventListener('message', receiveMessageIframePage, false)
+})
+
+const receiveMessageIframePage = e => {
+  if (e.data.type == 'loading') {
+    loadingNum.value = Math.ceil(e.data.data * 100)
+    // console.log(loadingNum.value)
+  } else if ((e.data.type = 'aaa')) {
+    // 交互完成loading
+    interactiveLoading.value = false
+  }
+}
+
+// 固定问答
+const fixedAnswer = text => {
+  iframeDom.value.contentWindow.postMessage({ type: 'TextAnswerMotion', data: text }, '*')
+}
+
+// 交互loading
+const interactiveLoading = ref(false)
 </script>
+<style lang="scss" scoped>
+body {
+  overflow: none;
+}
+#wrap {
+  background: url('../assets/img_bg@2x.jpg') no-repeat;
+  width: 100vw;
+  height: 100vh;
+  background-size: 100% 100%;
+}
+
+#iframeDom {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  left: 0;
+  z-index: 1;
+}
+
+.welcome {
+  padding-top: 1.45rem;
+
+  .welcome-logo {
+    background: url('../assets/logo.png') no-repeat;
+    width: 0.7rem;
+    height: 0.7rem;
+    background-size: cover;
+    margin: 0 auto;
+  }
+
+  .welcome-name {
+    color: #37c7f7;
+    font-size: 0.18rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .welcome-desc {
+    font-size: 0.13rem;
+    color: #333;
+    width: 3.35rem;
+    margin: 0 auto;
+    text-align: left;
+    line-height: 1.6em;
+  }
+
+  .welcome-btn {
+    width: 3.35rem;
+    margin: 0.5rem auto 0 auto;
+    background-color: #37acf7;
+    color: #fff;
+    border: none;
+  }
+}
+
+.loading {
+  background: url('../assets/img_bg@2x.jpg') no-repeat #ddd;
+  background-size: 100% 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  z-index: 10;
+}
+
+.header {
+  background-color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  text-align: center;
+  width: 100%;
+  padding: 0.1rem 0;
+  z-index: 100;
+}
+.popup-wrap {
+  padding: 0.2rem;
+  text-align: left;
+  position: relative;
+
+  h6 {
+    text-align: center;
+    font-size: 0.18rem;
+    padding: 0;
+    margin: 0 0 0.2rem 0;
+  }
+}
+
+.out-btn {
+  width: 3.05rem;
+  color: #333;
+  border: none;
+
+  &.active {
+    background-color: #eee;
+  }
+}
+
+.ico {
+  width: 0.25rem;
+  height: 0.25rem;
+  overflow: hidden;
+  background-size: cover !important;
+
+  &.keybord {
+    background: url('../assets/icon_keyboard@2x.png');
+  }
+  &.mic {
+    background: url('../assets/icon_voice@2x.png');
+  }
+}
+
+.stage {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+}
+
+.config-btn {
+  position: absolute;
+  right: 0.1rem;
+  top: 0.1rem;
+}
+.buttom-bar {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  z-index: 90;
+
+  .quick-bar {
+    padding: 0.1rem;
+    text-align: left;
+    .tag-title {
+      font-size: 0.13rem;
+      color: #1989fa;
+    }
+    .van-tag {
+      margin-right: 0.1rem;
+    }
+  }
+
+  .option-bar {
+    background-color: #f8f8f8;
+    padding: 0.1rem;
+    width: calc(100vw - 0.2rem);
+  }
+}
+.bottom-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .bottom-text {
+    width: 2.3rem;
+    border-radius: 0.2rem;
+  }
+
+  .bottom-btn {
+    border-radius: 0.2rem;
+  }
+}
+
+.setting-ico {
+  background: url('../assets/img_set up@2x.png');
+  background-size: cover;
+  display: block;
+  width: 0.2rem;
+  height: 0.2rem;
+}
+
+.about-banner {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding: 0.1rem 0;
+
+  .about-left {
+    display: flex;
+    align-items: center;
+    color: #37c7f7;
+  }
+
+  .about-logo {
+    width: 0.3rem;
+    height: 0.3rem;
+    background-size: cover !important;
+    background: url('../assets/logo.png') no-repeat;
+    margin-right: 0.1rem;
+  }
+}
+.about-text {
+  font-size: 0.13rem;
+}
+
+.submit-btn {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.2rem;
+  border: none;
+}
+
+.role-item-group {
+  display: flex;
+  justify-content: space-around;
+
+  .role-item {
+    width: 1rem;
+    height: 2rem;
+    align-items: flex-start;
+    text-align: center;
+    margin: 0;
+    overflow: hidden;
+
+    .van-radio__icon {
+      flex: auto !important;
+    }
+
+    img {
+      border-radius: 0.1rem;
+      width: 0.9rem;
+    }
+
+    &[aria-checked='true'] {
+      color: #37acf7;
+      font-size: 0.13rem;
+      img {
+        border: 1px solid #37acf7;
+      }
+    }
+  }
+}
+
+.type-item {
+  height: 0.5rem;
+  border: 1px solid #ccc;
+  margin: 0.15rem 0;
+  width: 100%;
+  text-align: center;
+  border-radius: 0.1rem;
+  justify-content: center;
+  font-size: 0.14rem !important;
+
+  &[aria-checked='true'] {
+    border-color: #37acf7;
+    color: #37acf7;
+  }
+}
+
+.interactiveLoading {
+  position: absolute;
+  right: 0.2rem;
+  bottom: 0.8rem;
+}
+</style>
