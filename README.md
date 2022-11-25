@@ -20,9 +20,11 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## WEB接入 数字人
 
+### demo 访问链接：https://demo.deepscience.cn/html-poc/index.html
+
 ### WEB以iframe方式加载数字人
 ```html
-<iframe src="https://www.xxx.com/index.html" frameborder="0" allow="autoplay" id="iframeDom"></iframe>
+<iframe src="https://demo.deepscience.cn/poc/index.html" frameborder="0" allow="autoplay" id="iframeDom"></iframe>
 ```
 
 ### WEB调用iframe页面的方法
