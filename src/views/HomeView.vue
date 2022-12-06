@@ -16,7 +16,6 @@
     <!-- stage -->
     <div class="stage" v-if="step === 1 || step === 2">
       <!-- http://192.168.10.105:5500/index.html -->
-      <!-- https://demo.deepscience.cn/poc/index.html -->
       <iframe src="https://demo.deepscience.cn/poc/index.html" frameborder="0" ref="iframeDom" allow="autoplay" id="iframeDom"></iframe>
       <div class="header">
         Motionverse 示例
@@ -70,24 +69,12 @@
     <div class="popup-wrap">
       <h6>{{popupTitle}}</h6>
       <!-- 数字人更换 -->
-      <div v-if="popupIndex === 0">
-        <van-radio-group v-model="role" direction="horizontal" class="role-item-group">
-          <van-radio name="0" class="role-item">
+      <div v-if="popupIndex === 0" style="overflow-x: scroll">
+        <van-radio-group v-model="role" direction="horizontal" class="role-item-group" :style="'width:' + roleList.length + 'rem'">
+          <van-radio class="role-item" v-for="item in roleList" :key="item.abName" :name="item.abName">
             <template #icon="props">
-              <img src="../assets/role0.jpg" :data-alt="props">
-              <p>楚楚</p>
-            </template>
-          </van-radio>
-          <van-radio name="1" class="role-item">
-            <template #icon="props">
-              <img src="../assets/role1.jpg" :data-alt="props">
-              <p>男青年</p>
-            </template>
-          </van-radio>
-          <van-radio name="2" class="role-item">
-            <template #icon="props">
-              <img src="../assets/role2.jpg" :data-alt="props">
-              <p>小老虎</p>
+              <img :src="item.img" :data-alt="props">
+              <p>{{item.name}}</p>
             </template>
           </van-radio>
         </van-radio-group>
@@ -135,14 +122,21 @@
 import { ref, watch, onMounted } from 'vue'
 import { Toast } from 'vant'
 import Recorder from 'recorder-core/recorder.wav.min'
+import { getRole } from '@/http/api'
 
 const desc = ref(
   'Motionverse数字人开放平台提供数字人 PaaS & SaaS 解决方案，支持以文本、语音、动作等多种方式通过AI智能算法来驱动数字人。提供给客户标准的 PaaS 接口与 SaaS 运营工具，方便客户将数字人能力集成进不同的终端与场景。主要面对的行业包括新零售、政务、金融、运营商、传媒、游戏等，场景包括数字人信息播报等。'
 )
 
 const step = ref(0) // 0:welcome 1:加载 2:demo
+const roleList = ref([])
 const onExperience = () => {
   step.value = 1
+  getRole().then(res => {
+    roleList.value = res.data
+    role.value = roleList.value[0].abName
+    stageRole.value = roleList.value[0].abName
+  })
 }
 
 // unity 加载
@@ -150,6 +144,7 @@ const loadingNum = ref(0)
 watch(loadingNum, (newValue, oldValue) => {
   if (newValue >= 100) {
     step.value = 2
+    setIframeHeight()
   }
 })
 
@@ -174,11 +169,12 @@ const popupIndex = ref(0)
 const popupShow = ref(false)
 
 // 更换数字人
-const role = ref('0')
-const stageRole = ref('0')
+const role = ref('')
+const stageRole = ref('')
 const changeRole = () => {
   stageRole.value = role.value
   popupShow.value = false
+  // console.log(stageRole.value)
   iframeDom.value.contentWindow.postMessage({ type: 'ChangeCharacter', data: stageRole.value }, '*')
 }
 
@@ -188,7 +184,6 @@ const stageType = ref(1)
 const changeType = () => {
   stageType.value = type.value
   popupShow.value = false
-  // console.log('交互类型' + stageType.value)
 }
 
 /**
@@ -200,14 +195,16 @@ const changeBoardcastType = () => {
   boardcastType.value = !boardcastType.value
 }
 
-const outData = ['https://ds-model-tts.oss-cn-beijing.aliyuncs.com/temp/166919193808772872.wav', 'https://ds-model-tts.oss-cn-beijing.aliyuncs.com/temp/166919195695082899.wav', 'https://ds-model-tts.oss-cn-beijing.aliyuncs.com/temp/166919196901136380.wav']
+const outData = ['https://ds-model-tts.oss-cn-beijing.aliyuncs.com/temp/166919193808772872.wav']
 const boardcastOutData = () => {
-  // interactiveLoading.value = true
-  iframeDom.value.contentWindow.postMessage({ type: 'AudioBroadcast', data: outData[parseInt(stageRole.value)] }, '*')
+  // const _index = roleList.value.findIndex(item => item.abName === stageRole.value)
+  iframeDom.value.contentWindow.postMessage({ type: 'AudioBroadcast', data: outData[0] }, '*')
 }
 const onBoardcast = () => {
   if (boardcastText.value != '') {
-    // interactiveLoading.value = true
+    // var ev = document.createEvent('MouseEvents')
+    // ev.initEvent('touchStart', false, true)
+    // iframeDom.value.dispatchEvent(ev)
     iframeDom.value.contentWindow.postMessage({ type: 'TextBroadcast', data: boardcastText.value }, '*')
     boardcastText.value = ''
   } else {
@@ -225,8 +222,7 @@ const changeQaType = () => {
 }
 const onQa = () => {
   if (qaText.value != '') {
-    console.log(qaText.value)
-    // interactiveLoading.value = true
+    // console.log(qaText.value)
     iframeDom.value.contentWindow.postMessage({ type: 'TextAnswerMotion', data: qaText.value }, '*')
     qaText.value = ''
   } else {
@@ -249,7 +245,7 @@ const onRecordStart = e => {
   newRec.open(
     () => {
       rec.value = newRec
-      console.log(rec)
+      // console.log(rec)
       rec.value.start()
       console.log('开始录音')
     },
@@ -277,7 +273,6 @@ const onRecordEnd = () => {
         .then(base64 => {
           const _base64 = base64.split('data:audio/wav;base64,')[1]
           // console.log(_base64)
-          // interactiveLoading.value = true
           iframeDom.value.contentWindow.postMessage({ type: 'AudioAnswerMotion', data: _base64 }, '*')
         })
         .catch(err => {
@@ -309,15 +304,15 @@ const onRecordEnd = () => {
 const iframeDom = ref()
 onMounted(() => {
   window.addEventListener('message', receiveMessageIframePage, false)
+  window.addEventListener('resize', setIframeHeight, false)
 })
 
 const receiveMessageIframePage = e => {
   if (e.data.type == 'loading') {
     loadingNum.value = Math.ceil(e.data.data * 100)
-    // console.log(loadingNum.value)
-  } else if ((e.data.type = 'aaa')) {
+  } else if (e.data.type == 'loadAb') {
     // 交互完成loading
-    interactiveLoading.value = false
+    interactiveLoading.value = e.data.data
   }
 }
 
@@ -328,22 +323,21 @@ const fixedAnswer = text => {
 
 // 交互loading
 const interactiveLoading = ref(false)
+
+// 适配safari 动态设置iframe高度
+const setIframeHeight = () => {
+  const headerHeight = document.querySelector('.header').offsetHeight
+  const bottomBarTop = document.querySelector('.option-bar').getBoundingClientRect().top
+  iframeDom.value.style.height = bottomBarTop - headerHeight + 'px'
+}
 </script>
 <style lang="scss" scoped>
-body {
-  overflow: none;
-}
-#wrap {
-  background: url('../assets/img_bg@2x.jpg') no-repeat;
-  width: 100vw;
-  height: 100vh;
-  background-size: 100% 100%;
-}
-
 #iframeDom {
   position: absolute;
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 0.5rem - 0.65rem);
+  top: 0.5rem;
+  // height: 100vh;
   left: 0;
   z-index: 1;
 }
@@ -400,10 +394,12 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  text-align: center;
   width: 100%;
-  padding: 0.1rem 0;
+  height: 0.5rem;
   z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .popup-wrap {
   padding: 0.2rem;
@@ -419,7 +415,8 @@ body {
 }
 
 .out-btn {
-  width: 3.05rem;
+  // width: 3.05rem;
+  width: calc(100vw - 0.8rem);
   color: #333;
   border: none;
 
@@ -454,7 +451,7 @@ body {
 .config-btn {
   position: absolute;
   right: 0.1rem;
-  top: 0.1rem;
+  top: 0.15rem;
 }
 .buttom-bar {
   position: fixed;
@@ -462,6 +459,7 @@ body {
   bottom: 0;
   left: 0;
   z-index: 90;
+  min-height: 0.65rem;
 
   .quick-bar {
     padding: 0.1rem;
@@ -478,6 +476,7 @@ body {
   .option-bar {
     background-color: #f8f8f8;
     padding: 0.1rem;
+    height: 0.45rem;
     width: calc(100vw - 0.2rem);
   }
 }
@@ -487,7 +486,8 @@ body {
   align-items: center;
 
   .bottom-text {
-    width: 2.3rem;
+    // width: 2.3rem;
+    width: calc(100vw - 1.5rem);
     border-radius: 0.2rem;
   }
 
@@ -537,11 +537,12 @@ body {
 
 .role-item-group {
   display: flex;
+  flex-wrap: nowrap;
   justify-content: space-around;
 
   .role-item {
     width: 1rem;
-    height: 2rem;
+    height: 2.2rem;
     align-items: flex-start;
     text-align: center;
     margin: 0;
@@ -584,7 +585,9 @@ body {
 
 .interactiveLoading {
   position: absolute;
-  right: 0.2rem;
-  bottom: 0.8rem;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
 }
 </style>
