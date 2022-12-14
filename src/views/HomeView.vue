@@ -69,15 +69,17 @@
     <div class="popup-wrap">
       <h6>{{popupTitle}}</h6>
       <!-- 数字人更换 -->
-      <div v-if="popupIndex === 0" style="overflow-x: scroll">
-        <van-radio-group v-model="role" direction="horizontal" class="role-item-group" :style="'width:' + roleList.length + 'rem'">
-          <van-radio class="role-item" v-for="item in roleList" :key="item.abName" :name="item.abName">
-            <template #icon="props">
-              <img :src="item.img" :data-alt="props">
-              <p>{{item.name}}</p>
-            </template>
-          </van-radio>
-        </van-radio-group>
+      <div v-if="popupIndex === 0">
+        <div style="overflow-x: scroll">
+          <van-radio-group v-model="role" direction="horizontal" class="role-item-group" :style="'width:' + roleList.length + 'rem'">
+            <van-radio class="role-item" v-for="item in roleList" :key="item.abName" :name="item.abName">
+              <template #icon="props">
+                <img :src="item.img" :data-alt="props">
+                <p>{{item.name}}</p>
+              </template>
+            </van-radio>
+          </van-radio-group>
+        </div>
         <van-button @click="changeRole" class="submit-btn" size="normal">确定</van-button>
       </div>
 
