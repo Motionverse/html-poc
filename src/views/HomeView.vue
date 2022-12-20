@@ -49,7 +49,8 @@
           <div v-if="stageType == 2">
             <div v-if="qaType" class="bottom-option">
               <div @click="changeQaType" class="ico keybord"></div>
-              <van-button @touchstart="onRecordStart" @touchend="onRecordEnd" round class="out-btn record-btn" :class="{active: recordStatus}">长按说话</van-button>
+              <van-button @touchstart="onRecordStart" @touchend="onRecordEnd" round class="out-btn record-btn" :class="{active: recordStatus}" v-if="isMobile">长按说话</van-button>
+              <van-button @mousedown="onRecordStart" @mouseup="onRecordEnd" round class="out-btn record-btn" :class="{active: recordStatus}" v-else>长按说话</van-button>
             </div>
             <div v-if="!qaType" class="bottom-option">
               <div @click="changeQaType" class="ico mic"></div>
@@ -151,6 +152,16 @@ watch(loadingNum, (newValue, oldValue) => {
 })
 
 /**
+ * 是否移动设备
+ */
+const isMobile = ref(false)
+const checkMobile = () => {
+  isMobile.value = /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)
+}
+checkMobile()
+window.addEventListener('resize', checkMobile, false)
+
+/**
  * 设置菜单相关
  */
 const configShow = ref(false)
@@ -242,7 +253,8 @@ const onRecordStart = e => {
   let newRec = Recorder({
     type: 'wav',
     sampleRate: 16000,
-    bitRate: 24
+    bitRate: 24,
+    onProcess: recProcess
   })
   newRec.open(
     () => {
@@ -250,11 +262,25 @@ const onRecordStart = e => {
       // console.log(rec)
       rec.value.start()
       console.log('开始录音')
+      recPower.value = {
+        buffers: [],
+        powerLeverTotal: 0
+      }
     },
     err => {
       console.log('录音权限已拒绝' + err)
     }
   )
+}
+
+// 监听录音音量
+const recPower = ref({
+  buffers: [],
+  powerLeverTotal: 0
+})
+const recProcess = (buffers, powerLevel, bufferDuration, bufferSampleRate, newBufferIdx, asyncEnd) => {
+  recPower.value.buffers = buffers
+  recPower.value.powerLeverTotal += powerLevel
 }
 
 const blobToDataUrl = blob => {
@@ -270,11 +296,16 @@ const onRecordEnd = () => {
   recordStatus.value = false
   rec.value.stop(
     (blob, duration) => {
-      console.log(`已录制${duration}ms，${blob.size}字节`)
+      const averagePower = recPower.value.powerLeverTotal / recPower.value.buffers.length
+      console.log(`已录制${duration}ms，${blob.size}字节，平均音量${averagePower}`)
+      // 音量不能低于此设置
+      if (averagePower < 1.5) {
+        Toast('声音异常，请重试')
+        return
+      }
       blobToDataUrl(blob)
         .then(base64 => {
           const _base64 = base64.split('data:audio/wav;base64,')[1]
-          // console.log(_base64)
           iframeDom.value.contentWindow.postMessage({ type: 'AudioAnswerMotion', data: _base64 }, '*')
         })
         .catch(err => {
@@ -284,8 +315,6 @@ const onRecordEnd = () => {
       //   blob,
       //   size: blob.size
       // }
-
-      // console.log(audioRes)
       // var audio = document.createElement('audio')
       // audio.controls = true
       // document.body.appendChild(audio)
@@ -328,9 +357,11 @@ const interactiveLoading = ref(false)
 
 // 适配safari 动态设置iframe高度
 const setIframeHeight = () => {
-  const headerHeight = document.querySelector('.header').offsetHeight
-  const bottomBarTop = document.querySelector('.option-bar').getBoundingClientRect().top
-  iframeDom.value.style.height = bottomBarTop - headerHeight + 'px'
+  if (document.querySelector('.header')) {
+    const headerHeight = document.querySelector('.header').offsetHeight
+    const bottomBarTop = document.querySelector('.option-bar').getBoundingClientRect().top
+    iframeDom.value.style.height = bottomBarTop - headerHeight + 'px'
+  }
 }
 </script>
 <style lang="scss" scoped>
