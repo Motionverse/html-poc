@@ -15,8 +15,7 @@
 
     <!-- stage -->
     <div class="stage" v-if="step === 1 || step === 2">
-      <!-- http://192.168.10.105:5500/index.html -->
-      <iframe src="https://demo.deepscience.cn/poc/index.html" frameborder="0" ref="iframeDom" allow="autoplay" id="iframeDom"></iframe>
+      <iframe :src="iframeUrl" frameborder="0" ref="iframeDom" allow="autoplay" id="iframeDom"></iframe>
       <div class="header">
         Motionverse 示例
         <div class="config-btn">
@@ -362,6 +361,23 @@ const setIframeHeight = () => {
     const bottomBarTop = document.querySelector('.option-bar').getBoundingClientRect().top
     iframeDom.value.style.height = bottomBarTop - headerHeight + 'px'
   }
+}
+
+// 获取 url 中参数
+const getQueryParams = url => {
+  const paramArr = url.slice(url.indexOf('?') + 1).split('&')
+  const params = {}
+  paramArr.map(param => {
+    const [key, val] = param.split('=')
+    params[key] = decodeURIComponent(val)
+  })
+  return params
+}
+
+// 动态设置iframe 地址
+const iframeUrl = ref('https://demo.deepscience.cn/poc/index.html')
+if (getQueryParams(window.location.href).previewurl) {
+  iframeUrl.value = getQueryParams(window.location.href).previewurl + '?code=' + getQueryParams(window.location.href).code
 }
 </script>
 <style lang="scss" scoped>
