@@ -36,7 +36,7 @@ var iframeDom = document.getElementById('iframeDom')
 iframeDom.contentWindow.postMessage({ type: 'ChangeCharacter', data: roleIndex }, '*')
 
 // 播报声音文件地址 type: 方法名 data:方法参数【声音文件URL地址】
-iframeDom.contentWindow.postMessage({ type: 'AudioBroadcast', data: audioUrl] }, '*')
+iframeDom.contentWindow.postMessage({ type: 'AudioBroadcast', data: audioUrl }, '*')
 
 // 播报文本 type: 方法名 data:方法参数【播报的文本】
 iframeDom.contentWindow.postMessage({ type: 'TextBroadcast', data: boardcastText }, '*')
@@ -53,8 +53,30 @@ iframeDom.contentWindow.postMessage({ type: 'AudioAnswerMotion', data: base64 },
 
 // 监听iframe方法
  window.addEventListener('message', function(){
-  if (e.data.type == 'loading') { // iframe页面载入进度
+
+  // iframe页面载入进度
+  if (e.data.type == 'loading') {
     console.log(Math.ceil(e.data.data * 100))
   }
+
+  // 交互完成loading
+  if (e.data.type == 'loadAb') {
+    interactiveLoading.value = e.data.data
+  }
+
+  // 播放开始
+  if (e.data.type == 'playStart'){
+    // 问题文本
+    console.log(e.data.text)
+
+    // 答案文本
+    console.log(e.data.answer)
+  }
+
+  // 播放结束
+  if (e.data.type == 'playEnd'){
+    // code...
+  }
+
  }, false)
 ```
