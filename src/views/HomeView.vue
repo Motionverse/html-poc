@@ -15,7 +15,9 @@
 
     <!-- stage -->
     <div class="stage" v-if="step === 1 || step === 2">
-      <iframe :src="iframeUrl" frameborder="0" ref="iframeDom" allow="autoplay" id="iframeDom"></iframe>
+      <div id="iframe-wrap" :class="{bank: sceneType == 2}">
+        <iframe :src="iframeUrl" frameborder="0" ref="iframeDom" allow="autoplay" id="iframeDom"></iframe>
+      </div>
       <div class="header">
         Motionverse 示例
         <div class="config-btn">
@@ -25,11 +27,15 @@
       </div>
 
       <div class="buttom-bar">
-        <div class="quick-bar" v-if="stageType == 2">
-          <p class="tag-title">您可以问以下问题：</p>
-          <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('平台介绍')">平台介绍</van-tag>
+        <div class="quick-bar" v-if="!prevView && stageType == 2">
+          <!-- <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('平台介绍')">平台介绍</van-tag>
           <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('技术介绍')">技术介绍</van-tag>
-          <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('业务介绍')">业务介绍</van-tag>
+          <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('业务介绍')">业务介绍</van-tag> -->
+          <div v-if="sceneType == 2">
+            <p class="tag-title">您可以问以下问题：</p>
+            <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('最近有什么好的产品')">最近产品</van-tag>
+            <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('理财购买')">理财购买</van-tag>
+          </div>
         </div>
         <div class="option-bar">
           <!-- 播报 -->
@@ -60,7 +66,7 @@
         </div>
       </div>
 
-      <van-loading type="spinner" size="40px" vertical color="#666666" text-size="14px" class="interactiveLoading" v-if="interactiveLoading"></van-loading>
+      <div class="interactiveLoading" v-if="interactiveLoading"></div>
     </div>
   </div>
 
@@ -104,8 +110,29 @@
         <van-button @click="changeType" class="submit-btn" size="normal">确定</van-button>
       </div>
 
-      <!-- 关于示例 -->
+      <!-- 应用场景更换 -->
       <div v-if="popupIndex === 2">
+        <van-radio-group v-model="scene">
+          <van-radio :name="1" class="type-item">
+            <template #icon="props">
+              <div :id="props">
+                普通场景
+              </div>
+            </template>
+          </van-radio>
+          <van-radio :name="2" class="type-item">
+            <template #icon="props">
+              <div :id="props">
+                银行场景
+              </div>
+            </template>
+          </van-radio>
+        </van-radio-group>
+        <van-button @click="changeScene" class="submit-btn" size="normal">确定</van-button>
+      </div>
+
+      <!-- 关于示例 -->
+      <div v-if="popupIndex === 3">
         <div class="about-banner">
           <div class="about-left">
             <div class="about-logo"></div>
@@ -116,8 +143,39 @@
         <p class="about-text">{{desc}}</p>
       </div>
     </div>
-
   </van-popup>
+
+  <!-- 介绍单图展示 -->
+  {{singleImgSrc}}
+  <div class="single-img" v-if="singleImgSrc">
+    <img :src="singleImgSrc" alt="">
+  </div>
+
+  <!-- Swiper -->
+  <van-overlay :show="show" @click="closeSwiper" :z-index="10">
+    <div class="wrapper" @click.stop>
+      <div id="swiper" v-if="show">
+        <swiper class="swiper" :modules="[Pagination]" :space-between="10" slides-per-view="auto" :centered-slides="true" :initialSlide="1">
+          <swiper-slide class="slide" v-for="item in swiperImage" :key="item.image">
+            <img :src="item.image" alt="" @click="swiperClick(item.big)">
+          </swiper-slide>
+        </swiper>
+        <van-button @click="closeSwiper">关闭</van-button>
+      </div>
+    </div>
+  </van-overlay>
+
+  <!-- Swiper Image -->
+  <van-overlay :show="swiperBigShow" @click="closeSwiperBig" :z-index="11">
+    <div class="wrapper" @click.stop>
+      <div class="swiper-big">
+        <van-icon name="close" @click="closeSwiperBig" color="#FFFFFF" size="40px" class="swiper-big-close" />
+        <img :src="swiperBigImg" alt="">
+        <van-button type="primary">购买</van-button>
+      </div>
+    </div>
+  </van-overlay>
+
 </template>
 
 <script setup>
@@ -125,6 +183,12 @@ import { ref, watch, onMounted } from 'vue'
 import { Toast } from 'vant'
 import Recorder from 'recorder-core/recorder.wav.min'
 import { getRole } from '@/http/api'
+
+// swiper
+import { Pagination } from 'swiper'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import 'swiper/css/pagination'
 
 const desc = ref(
   'Motionverse数字人开放平台提供数字人 PaaS & SaaS 解决方案，支持以文本、语音、动作等多种方式通过AI智能算法来驱动数字人。提供给客户标准的 PaaS 接口与 SaaS 运营工具，方便客户将数字人能力集成进不同的终端与场景。主要面对的行业包括新零售、政务、金融、运营商、传媒、游戏等，场景包括数字人信息播报等。'
@@ -164,7 +228,7 @@ window.addEventListener('resize', checkMobile, false)
  * 设置菜单相关
  */
 const configShow = ref(false)
-const actions = [{ name: '数字人更换' }, { name: '交互类型更换' }, { name: '关于示例' }]
+const actions = [{ name: '数字人更换' }, { name: '交互类型更换' }, { name: '应用场景更换' }, { name: '关于示例' }]
 const onSelect = (item, index) => {
   configShow.value = false
   popupIndex.value = index
@@ -173,6 +237,7 @@ const onSelect = (item, index) => {
   // 同步选项数据
   role.value = stageRole.value
   type.value = stageType.value
+  scene.value = sceneType.value
 }
 
 // 弹出层
@@ -191,11 +256,22 @@ const changeRole = () => {
 }
 
 // 更换交互类型
-const type = ref(1)
-const stageType = ref(1)
+const type = ref(2)
+const stageType = ref(2) // 1 播报 2问答
 const changeType = () => {
   stageType.value = type.value
   popupShow.value = false
+}
+
+// 应用场景
+const scene = ref(1)
+const sceneType = ref(1) // 1普通场景 2银行场景
+const changeScene = () => {
+  sceneType.value = scene.value
+  popupShow.value = false
+  if (sceneType.value == 2) {
+    stageType.value = 2
+  }
 }
 
 /**
@@ -209,15 +285,12 @@ const changeBoardcastType = () => {
 
 const outData = ['https://ds-model-tts.oss-cn-beijing.aliyuncs.com/temp/166919193808772872.wav']
 const boardcastOutData = () => {
-  // const _index = roleList.value.findIndex(item => item.abName === stageRole.value)
   iframeDom.value.contentWindow.postMessage({ type: 'AudioBroadcast', data: outData[0] }, '*')
 }
 const onBoardcast = () => {
   if (boardcastText.value != '') {
-    // var ev = document.createEvent('MouseEvents')
-    // ev.initEvent('touchStart', false, true)
-    // iframeDom.value.dispatchEvent(ev)
     iframeDom.value.contentWindow.postMessage({ type: 'TextBroadcast', data: boardcastText.value }, '*')
+    interactiveLoading.value = true
     boardcastText.value = ''
   } else {
     Toast('请输入文字')
@@ -236,6 +309,7 @@ const onQa = () => {
   if (qaText.value != '') {
     // console.log(qaText.value)
     iframeDom.value.contentWindow.postMessage({ type: 'TextAnswerMotion', data: qaText.value }, '*')
+    interactiveLoading.value = true
     qaText.value = ''
   } else {
     Toast('请输入文字')
@@ -258,7 +332,6 @@ const onRecordStart = e => {
   newRec.open(
     () => {
       rec.value = newRec
-      // console.log(rec)
       rec.value.start()
       console.log('开始录音')
       recPower.value = {
@@ -306,6 +379,7 @@ const onRecordEnd = () => {
         .then(base64 => {
           const _base64 = base64.split('data:audio/wav;base64,')[1]
           iframeDom.value.contentWindow.postMessage({ type: 'AudioAnswerMotion', data: _base64 }, '*')
+          interactiveLoading.value = true
         })
         .catch(err => {
           console.log('录音错误:' + err)
@@ -338,16 +412,31 @@ onMounted(() => {
 })
 
 const receiveMessageIframePage = e => {
+  // console.log(e)
   if (e.data.type == 'loading') {
     loadingNum.value = Math.ceil(e.data.data * 100)
   } else if (e.data.type == 'loadAb') {
     // 交互完成loading
     interactiveLoading.value = e.data.data
+  } else if (e.data.type == 'playStart') {
+    // 开始播放
+    if (e.data.order) {
+      if (e.data.answer == '近期比较优质得理财产品有：产品一，上银理财鑫享利，1个月，产品二，上银理财价值甄选100期，1点8年，产品三，上银理财双周利-14天持有。') {
+        // 显示产品介绍
+        showSingleImg()
+      }
+      if (e.data.answer == '我航有多样化理财产品满足您的需求') {
+        // 显示理财购买
+        show.value = true
+      }
+    }
+    interactiveLoading.value = !e.data.data
   }
 }
 
 // 固定问答
 const fixedAnswer = text => {
+  interactiveLoading.value = true
   iframeDom.value.contentWindow.postMessage({ type: 'TextAnswerMotion', data: text }, '*')
 }
 
@@ -359,7 +448,7 @@ const setIframeHeight = () => {
   if (document.querySelector('.header')) {
     const headerHeight = document.querySelector('.header').offsetHeight
     const bottomBarTop = document.querySelector('.option-bar').getBoundingClientRect().top
-    iframeDom.value.style.height = bottomBarTop - headerHeight + 'px'
+    document.getElementById('iframe-wrap').style.height = bottomBarTop - headerHeight + 'px'
   }
 }
 
@@ -375,20 +464,104 @@ const getQueryParams = url => {
 }
 
 // 动态设置iframe 地址
-const iframeUrl = ref('https://demo.deepscience.cn/poc/index.html')
+const iframeUrl = ref('https://avatar.deepscience.cn/v1_dev/index.html?code=xVNEJ9ovjQ7EmOlnYO4TlRTB17zMOZOpaNqDyhZLU6BS5oKbvTZvhUc9YqlFaSOe20ooP3VN446VoqK3OoazZyBG4JV4FL+UQc1use3Xlu/deW5WLMq/25h0eOiV4XKk')
+const prevView = ref(false) // 默认为不是motionver预览
 if (getQueryParams(window.location.href).previewurl) {
+  prevView.value = true
   iframeUrl.value = getQueryParams(window.location.href).previewurl + '?code=' + getQueryParams(window.location.href).code
+}
+
+// iframe显示位置
+const setIframePostion = left => {
+  iframeDom.value.style.left = left + 'px'
+}
+
+// 展示单图
+const singleImgSrc = ref('')
+const setSingleImgSrc = src => {
+  singleImgSrc.value = src
+}
+const showSingleImg = () => {
+  setIframePostion(-100)
+  let index = 1
+  let count = 3
+  setSingleImgSrc(require('../assets/bank/icon' + index + '.jpg'))
+  index++
+  let timer = setInterval(() => {
+    if (index <= count) {
+      setSingleImgSrc(require('../assets/bank/icon' + index + '.jpg'))
+      index++
+    } else {
+      index = 1
+      clearInterval(timer)
+      singleImgSrc.value = ''
+      setIframePostion(0)
+    }
+  }, 4500)
+}
+// setTimeout(() => {
+//   showSingleImg()
+//   // setSingleImgSrc(require('../assets/bank/icon1.jpg'))
+// }, 20000)
+// setSingleImgSrc(require('../assets/bank/icon2.jpg'))
+// setSingleImgSrc(require('../assets/bank/icon3.jpg'))
+
+// swiper 相关
+const swiperImage = [
+  {
+    image: require('../assets/bank/image1.jpeg'),
+    big: require('../assets/bank/big1.jpeg')
+  },
+  {
+    image: require('../assets/bank/image2.jpeg'),
+    big: require('../assets/bank/big3.jpeg')
+  },
+  {
+    image: require('../assets/bank/image3.jpeg'),
+    big: require('../assets/bank/big3.jpeg')
+  }
+]
+const show = ref(false)
+const swiperClick = src => {
+  showSwiperBig(src)
+}
+const closeSwiper = () => {
+  show.value = false
+  // 播报文字 请问还有什么可以帮您的吗
+  iframeDom.value.contentWindow.postMessage({ type: 'TextBroadcast', data: '请问还有什么可以帮您的吗' }, '*')
+}
+
+// 预览相关
+const swiperBigShow = ref(false)
+const swiperBigImg = ref('')
+const showSwiperBig = src => {
+  swiperBigShow.value = true
+  swiperBigImg.value = src
+}
+const closeSwiperBig = () => {
+  swiperBigShow.value = false
 }
 </script>
 <style lang="scss" scoped>
-#iframeDom {
+#iframe-wrap {
   position: absolute;
   width: 100vw;
   height: calc(100vh - 0.5rem - 0.65rem);
   top: 0.5rem;
-  // height: 100vh;
   left: 0;
   z-index: 1;
+
+  &.bank {
+    background: url('../assets/bank/bg_bank.jpg') no-repeat;
+    background-size: 100% 100%;
+  }
+}
+#iframeDom {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  transition: all 1s;
 }
 
 .welcome {
@@ -633,10 +806,79 @@ if (getQueryParams(window.location.href).previewurl) {
 }
 
 .interactiveLoading {
+  background: url('../assets/loading.png') no-repeat;
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  right: 5%;
+  bottom: 10%;
   z-index: 1;
+  width: 0.5rem;
+  height: 0.5rem;
+  animation: loading 2s infinite linear;
+  background-size: cover;
+}
+
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// 内容展示单图
+.single-img {
+  position: absolute;
+  width: 1.6rem;
+  overflow: hidden;
+  top: 1rem;
+  left: 50%;
+  z-index: 5;
+
+  img {
+    width: 100%;
+  }
+}
+
+#swiper {
+  position: absolute;
+  width: 100%;
+  top: 1.5rem;
+}
+
+.swiper {
+  height: 3.5rem;
+  width: 3.5rem;
+}
+
+.slide {
+  // @include swiper-slide();
+  width: 80%;
+
+  &.swiper-slide-prev,
+  &.swiper-slide-next {
+    width: 70%;
+    margin-top: 5%;
+  }
+
+  img {
+    width: 100%;
+  }
+}
+.swiper-big {
+  width: 3.5rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  img {
+    width: 100%;
+  }
+  .swiper-big-close {
+    position: absolute;
+    right: 0.1rem;
+    top: -0.5rem;
+  }
 }
 </style>

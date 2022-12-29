@@ -10,8 +10,10 @@
     "axios": "^1.2.0",
     "core-js": "^3.8.3",
     "recorder-core": "^1.2.22080700",
+    "swiper": "^8.4.5",
     "vant": "^3.6.5",
     "vue": "^3.2.13",
+    "vue-awesome-swiper": "^5.0.1",
     "vue-router": "^4.0.3"
   },
   "devDependencies": {

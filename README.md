@@ -1,4 +1,4 @@
-# motionverse-poc
+# html-poc
 
 ## Project setup
 ```
