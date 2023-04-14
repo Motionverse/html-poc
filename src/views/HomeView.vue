@@ -364,6 +364,15 @@ const blobToDataUrl = blob => {
   })
 }
 
+const blobToBytes = blob => {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader()
+    reader.readAsArrayBuffer(blob)
+    reader.onload = e => resolve(e.target.result)
+    reader.onerror = err => reject(err)
+  })
+}
+
 const onRecordEnd = () => {
   recordStatus.value = false
   rec.value.stop(
@@ -371,10 +380,10 @@ const onRecordEnd = () => {
       const averagePower = recPower.value.powerLeverTotal / recPower.value.buffers.length
       console.log(`已录制${duration}ms，${blob.size}字节，平均音量${averagePower}`)
       // 音量不能低于此设置
-      if (averagePower < 1.5) {
-        Toast('声音异常，请重试')
-        return
-      }
+      // if (averagePower < 1) {
+      //   Toast('声音异常，请重试')
+      //   return
+      // }
       blobToDataUrl(blob)
         .then(base64 => {
           const _base64 = base64.split('data:audio/wav;base64,')[1]
