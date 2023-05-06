@@ -46,7 +46,7 @@
             </div>
             <div v-if="!boardcastType" class="bottom-option">
               <div @click="changeBoardcastType" class="ico keybord"></div>
-              <van-field v-model="boardcastText" placeholder="请输入播报文字" class="bottom-text" />
+              <van-field v-model="boardcastText" placeholder="请输入播报文字" class="bottom-text" @keyup.enter="onBoardcast" />
               <van-button @click="onBoardcast" type="primary" class="bottom-btn">发送</van-button>
             </div>
           </div>
@@ -59,7 +59,7 @@
             </div>
             <div v-if="!qaType" class="bottom-option">
               <div @click="changeQaType" class="ico mic"></div>
-              <van-field v-model="qaText" placeholder="请输入问题文字" class="bottom-text" />
+              <van-field v-model="qaText" placeholder="请输入问题文字" class="bottom-text" @keyup.enter="onQa" />
               <van-button @click="onQa" type="primary" class="bottom-btn">发送</van-button>
             </div>
           </div>
