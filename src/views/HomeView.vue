@@ -473,7 +473,7 @@ const getQueryParams = url => {
 }
 
 // 动态设置iframe 地址
-const iframeUrl = ref('https://avatar.deepscience.cn/v1/index.html?code=ukQp+KWskbENwQ32kjcusMithZFxTWHTQd7CwskY2VoC70UKlNsVBYe0r1VIv8ROCSNnQG4WREGcJMsgI5p3HfvW15Byg49/mb9GfBnbuvHaTyC7xh+eOjOt6qYa3axw')
+const iframeUrl = ref('https://avatar.deepscience.cn/v3/index.html?code=ukQp+KWskbENwQ32kjcusMithZFxTWHTQd7CwskY2VoC70UKlNsVBYe0r1VIv8ROCSNnQG4WREGcJMsgI5p3HfvW15Byg49/mb9GfBnbuvHaTyC7xh+eOjOt6qYa3axw')
 const prevView = ref(false) // 默认为不是motionver预览
 if (getQueryParams(window.location.href).previewurl) {
   prevView.value = true
