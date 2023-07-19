@@ -46,6 +46,9 @@ iframeDom.contentWindow.postMessage({ type: 'TextAnswerMotion', data: qaText }, 
 
 // 问答 语音问答 type: 方法名 data:方法参数【录音流的BASE64编码】
 iframeDom.contentWindow.postMessage({ type: 'AudioAnswerMotion', data: base64 }, '*')
+
+// 旋转模型 type: 方法名 data:模型面向角度 0 ~ 360
+iframeDom.contentWindow.postMessage({ type: 'CharacterRotate', data: 30 }, '*')
 ```
 
 ### WEB监听iframe页面的方法
