@@ -16,7 +16,6 @@ html {
   font-size: 0.18rem;
 }
 body {
-  overflow: none;
   background: url('./assets/img_bg@2x.jpg') no-repeat;
   background-size: 100% 100%;
   height: 100%;

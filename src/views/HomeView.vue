@@ -26,7 +26,7 @@
         </div>
       </div>
 
-      <div class="buttom-bar">
+      <div class="buttom-bar" v-if="touched == 2">
         <div class="quick-bar" v-if="!prevView && stageType == 2">
           <!-- <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('平台介绍')">平台介绍</van-tag>
           <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('技术介绍')">技术介绍</van-tag>
@@ -176,6 +176,12 @@
     </div>
   </van-overlay>
 
+  <!-- 触摸提示 -->
+  <div class="touch-tips" v-if="touched == 1">
+    <p>数字人已加载完毕</p>
+    <p>请点击空白处开始</p>
+  </div>
+
 </template>
 
 <script setup>
@@ -210,7 +216,7 @@ const loadingNum = ref(0)
 watch(loadingNum, (newValue, oldValue) => {
   if (newValue >= 100) {
     step.value = 2
-    setIframeHeight()
+    // setIframeHeight()
   }
 })
 
@@ -421,12 +427,12 @@ onMounted(() => {
 })
 
 const receiveMessageIframePage = e => {
-  // console.log(e)
   if (e.data.type == 'loading') {
     loadingNum.value = Math.ceil(e.data.data * 100)
   } else if (e.data.type == 'loadAb') {
     // 交互完成loading
     interactiveLoading.value = e.data.data
+    onTouched()
   } else if (e.data.type == 'playStart') {
     // 开始播放
     if (e.data.order) {
@@ -440,6 +446,9 @@ const receiveMessageIframePage = e => {
       }
     }
     interactiveLoading.value = !e.data.data
+  } else if (e.data.type == 'touch') {
+    // webview收到触摸事件
+    onTouched(e.data.data)
   }
 }
 
@@ -549,6 +558,17 @@ const showSwiperBig = src => {
 }
 const closeSwiperBig = () => {
   swiperBigShow.value = false
+}
+
+// 监听webview被点击
+const touched = ref(0) // 0:数字人未载入 1:数字人载入完成 2:数字人被点击
+const onTouched = (touch = false) => {
+  if (!interactiveLoading.value && loadingNum.value >= 100 && touched.value == 0) {
+    touched.value = 1
+  }
+  if (touch && touched.value == 1) {
+    touched.value = 2
+  }
 }
 </script>
 <style lang="scss" scoped>
@@ -888,6 +908,23 @@ const closeSwiperBig = () => {
     position: absolute;
     right: 0.1rem;
     top: -0.5rem;
+  }
+}
+
+.touch-tips {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 10px;
+  border-radius: 10px;
+  color: #1989fa;
+  box-shadow: 0 0 20px rgba($color: #000, $alpha: 0.6);
+  z-index: 5;
+  p {
+    padding: 0;
+    margin: 0;
   }
 }
 </style>
