@@ -3,93 +3,47 @@
   { 
     "abName":"Assets/ABResources/KeFu02/NvKeFu02.prefab", 
     "img":"./role/yunxi.jpg",
-    "name":"云汐",
-    "voiceName":"aixia",
-    "bodyMotion":4,
-    "styleTag":"Kefu",
-    "bsRatio":1.5,
-    "head_x_rot":-10
+    "name":"Emily"
   },
    { 
     "abName":"Assets/ABResources/Female/Female.prefab", 
     "img":"./role/majia.jpg",
-    "name":"马甲",
-    "voiceName":"aixia",
-    "bodyMotion":4,
-    "styleTag":"Kefu",
-    "bsRatio":1.5,
-    "head_x_rot":-10
+    "name":"Olivia"
   },
 
   { 
     "abName":"Assets/ABResources/XM01/Prefab/xiaomeng.prefab", 
     "img":"./role/xiaomeng.jpg",
-    "name":"小萌",
-    "voiceName":"aixia",
-    "bodyMotion":1,
-    "styleTag":"CakeGirlJQJSA",
-    "bsRatio":1.5,
-    "head_x_rot":-10
+    "name":"Ava"
   },
   { 
     "abName":"Assets/ABResources/Tiger/Prefab/laohu0113.prefab", 
     "img":"./role/xiaolaohu.jpg",
-    "name":"小老虎",
-    "voiceName":"jielidou",
-    "bodyMotion":1,
-    "styleTag":"Kefu",
-    "bsRatio":3,
-    "head_x_rot":-10
+    "name":"Tiger"
   },
   { 
     "abName":"Assets/ABResources/KeFu01/KeFu.prefab", 
     "img":"./role/chuchu.jpg",
-    "name":"楚楚",
-    "voiceName":"aixia",
-    "bodyMotion":1,
-    "styleTag":"Kefu",
-    "bsRatio":3,
-    "head_x_rot":-10
+    "name":"Sophia"
   },
   { 
     "abName":"Assets/ABResources/girl_metaCloth_rig/girl_metaCloth_rig.prefab", 
     "img":"./role/nvqingnian.jpg",
-    "name":"女青年",
-    "voiceName":"aixia",
-    "bodyMotion":1,
-    "styleTag":"Kefu",
-    "bsRatio":3,
-    "head_x_rot":-10
+    "name":"Isabella"
   },
   { 
     "abName":"Assets/ABResources/KeFu04/Prefab/KeFu-4.prefab", 
     "img":"./role/xiaoke1.jpg",
-    "name":"小可",
-    "voiceName":"aixia",
-    "bodyMotion":1,
-    "styleTag":"Kefu",
-    "bsRatio":1.5,
-    "head_x_rot":-10
+    "name":"Mia"
   },
   { 
     "abName":"Assets/ABResources/NewTV/WeiLaiShaoNV/wlds.prefab", 
     "img":"./role/xiaoke2.jpg",
-    "name":"小可",
-    "voiceName":"aixia",
-    "bodyMotion":1,
-    "styleTag":"Kefu",
-    "bsRatio":1.5,
-    "head_x_rot":-10
+    "name":"Charlotte"
   },
 { 
     "abName":"Assets/ABResources/yisheng/yisheng.prefab", 
     "img":"./role/yisheng.jpg",
-    "name":"医生",
-    "voiceName":"aixia",
-    "bodyMotion":1,
-    "styleTag":"Kefu",
-    "bsRatio":1.5,
-    "head_x_rot":-10
+    "name":"Doctor"
   }
-  
 ]

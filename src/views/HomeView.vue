@@ -5,7 +5,7 @@
       <div class="welcome-logo"></div>
       <p class="welcome-name">Motionverse</p>
       <p class="welcome-desc">{{desc}}</p>
-      <van-button round @click="onExperience" class="welcome-btn">立即体验</van-button>
+      <van-button round @click="onExperience" class="welcome-btn">Experience</van-button>
     </div>
 
     <!-- loading -->
@@ -19,10 +19,10 @@
         <iframe :src="iframeUrl" frameborder="0" ref="iframeDom" allow="autoplay" id="iframeDom"></iframe>
       </div>
       <div class="header">
-        Motionverse 示例
+        Motionverse Demo
         <div class="config-btn">
           <span @click="configShow = true" class="setting-ico"></span>
-          <van-action-sheet v-model:show="configShow" cancel-text="取消" :actions="actions" @select="onSelect" />
+          <van-action-sheet v-model:show="configShow" cancel-text="Cancel" :actions="actions" @select="onSelect" />
         </div>
       </div>
 
@@ -32,7 +32,7 @@
           <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('技术介绍')">技术介绍</van-tag>
           <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('业务介绍')">业务介绍</van-tag> -->
           <div v-if="sceneType == 2">
-            <p class="tag-title">您可以问以下问题：</p>
+            <p class="tag-title">You can ask the following questions:</p>
             <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('最近有什么好的产品')">最近产品</van-tag>
             <van-tag color="#1989fa" size="large" plain round @click="fixedAnswer('理财购买')">理财购买</van-tag>
           </div>
@@ -42,25 +42,25 @@
           <div v-if="stageType == 1">
             <div v-if="boardcastType" class="bottom-option">
               <div @click="changeBoardcastType" class="ico keybord"></div>
-              <van-button @click="boardcastOutData" round class="out-btn">点击播报语音文件</van-button>
+              <van-button @click="boardcastOutData" round class="out-btn">Click to broadcast voice files</van-button>
             </div>
             <div v-if="!boardcastType" class="bottom-option">
               <div @click="changeBoardcastType" class="ico keybord"></div>
-              <van-field v-model="boardcastText" placeholder="请输入播报文字" class="bottom-text" @keyup.enter="onBoardcast" />
-              <van-button @click="onBoardcast" type="primary" class="bottom-btn">发送</van-button>
+              <van-field v-model="boardcastText" placeholder="Please enter the broadcast text" class="bottom-text" @keyup.enter="onBoardcast" />
+              <van-button @click="onBoardcast" type="primary" class="bottom-btn">Send</van-button>
             </div>
           </div>
           <!-- 问答 -->
           <div v-if="stageType == 2">
             <div v-if="qaType" class="bottom-option">
               <div @click="changeQaType" class="ico keybord"></div>
-              <van-button @touchstart="onRecordStart" @touchend="onRecordEnd" round class="out-btn record-btn" :class="{active: recordStatus}" v-if="isMobile">长按说话</van-button>
-              <van-button @mousedown="onRecordStart" @mouseup="onRecordEnd" round class="out-btn record-btn" :class="{active: recordStatus}" v-else>长按说话</van-button>
+              <van-button @touchstart="onRecordStart" @touchend="onRecordEnd" round class="out-btn record-btn" :class="{active: recordStatus}" v-if="isMobile">Long press to speak</van-button>
+              <van-button @mousedown="onRecordStart" @mouseup="onRecordEnd" round class="out-btn record-btn" :class="{active: recordStatus}" v-else>Long press to speak</van-button>
             </div>
             <div v-if="!qaType" class="bottom-option">
               <div @click="changeQaType" class="ico mic"></div>
-              <van-field v-model="qaText" placeholder="请输入问题文字" class="bottom-text" @keyup.enter="onQa" />
-              <van-button @click="onQa" type="primary" class="bottom-btn">发送</van-button>
+              <van-field v-model="qaText" placeholder="Please enter the question text" class="bottom-text" @keyup.enter="onQa" />
+              <van-button @click="onQa" type="primary" class="bottom-btn">Send</van-button>
             </div>
           </div>
         </div>
@@ -86,7 +86,7 @@
             </van-radio>
           </van-radio-group>
         </div>
-        <van-button @click="changeRole" class="submit-btn" size="normal">确定</van-button>
+        <van-button @click="changeRole" class="submit-btn" size="mini" type="primary">Submit</van-button>
       </div>
 
       <!-- 交互类型更换 -->
@@ -95,19 +95,19 @@
           <van-radio :name="1" class="type-item">
             <template #icon="props">
               <div :id="props">
-                播报
+                Broadcast
               </div>
             </template>
           </van-radio>
           <van-radio :name="2" class="type-item">
             <template #icon="props">
               <div :id="props">
-                问答
+                Q and A
               </div>
             </template>
           </van-radio>
         </van-radio-group>
-        <van-button @click="changeType" class="submit-btn" size="normal">确定</van-button>
+        <van-button @click="changeType" class="submit-btn" size="mini" type="primary">Submit</van-button>
       </div>
 
       <!-- 应用场景更换 -->
@@ -116,19 +116,19 @@
           <van-radio :name="1" class="type-item">
             <template #icon="props">
               <div :id="props">
-                普通场景
+                Ordinary scenario
               </div>
             </template>
           </van-radio>
           <van-radio :name="2" class="type-item">
             <template #icon="props">
               <div :id="props">
-                银行场景
+                Banking Scenario
               </div>
             </template>
           </van-radio>
         </van-radio-group>
-        <van-button @click="changeScene" class="submit-btn" size="normal">确定</van-button>
+        <van-button @click="changeScene" class="submit-btn" size="mini" type="primary">Submit</van-button>
       </div>
 
       <!-- 关于示例 -->
@@ -160,7 +160,7 @@
             <img :src="item.image" alt="" @click="swiperClick(item.big)">
           </swiper-slide>
         </swiper>
-        <van-button @click="closeSwiper">关闭</van-button>
+        <van-button @click="closeSwiper">Close</van-button>
       </div>
     </div>
   </van-overlay>
@@ -171,15 +171,15 @@
       <div class="swiper-big">
         <van-icon name="close" @click="closeSwiperBig" color="#FFFFFF" size="40px" class="swiper-big-close" />
         <img :src="swiperBigImg" alt="">
-        <van-button type="primary">购买</van-button>
+        <van-button type="primary">Buy</van-button>
       </div>
     </div>
   </van-overlay>
 
   <!-- 触摸提示 -->
   <div class="touch-tips" v-if="touched == 1">
-    <p>数字人已加载完毕</p>
-    <p>请点击空白处开始</p>
+    <p>The Digital Human has been loaded</p>
+    <p>Please click on the blank space to start</p>
   </div>
 
 </template>
@@ -196,9 +196,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'
 import 'swiper/css/pagination'
 
-const desc = ref(
-  'Motionverse数字人开放平台提供数字人 PaaS & SaaS 解决方案，支持以文本、语音、动作等多种方式通过AI智能算法来驱动数字人。提供给客户标准的 PaaS 接口与 SaaS 运营工具，方便客户将数字人能力集成进不同的终端与场景。主要面对的行业包括新零售、政务、金融、运营商、传媒、游戏等，场景包括数字人信息播报等。'
-)
+const desc = ref('Motionverse Digital Human Open Platform provides Digital Human PaaS & SaaS solutions, supporting Digital Humans to be driven by AI intelligent algorithms through various means such as text, speech, and motion.')
 
 const step = ref(0) // 0:welcome 1:加载 2:demo
 const roleList = ref([])
@@ -234,8 +232,14 @@ window.addEventListener('resize', checkMobile, false)
  * 设置菜单相关
  */
 const configShow = ref(false)
-const actions = [{ name: '数字人更换' }, { name: '交互类型更换' }, { name: '应用场景更换' }, { name: '关于示例' }]
+const actions = [
+  { name: 'Digital Human Select', disabled: false },
+  { name: 'Interactivity Type Select', disabled: true },
+  { name: 'Scenario Select', disabled: true },
+  { name: 'About', disabled: false }
+]
 const onSelect = (item, index) => {
+  console.log(index)
   configShow.value = false
   popupIndex.value = index
   popupTitle.value = item.name
@@ -263,7 +267,7 @@ const changeRole = () => {
 
 // 更换交互类型
 const type = ref(2)
-const stageType = ref(2) // 1 播报 2问答
+const stageType = ref(1) // 1 播报 2问答
 const changeType = () => {
   stageType.value = type.value
   popupShow.value = false
@@ -289,7 +293,7 @@ const changeBoardcastType = () => {
   boardcastType.value = !boardcastType.value
 }
 
-const outData = ['https://ds-model-tts.oss-cn-beijing.aliyuncs.com/temp/166919193808772872.wav']
+const outData = ['https://motionverse-oversea.oss-us-west-1.aliyuncs.com/temp/169217423113252177.wav']
 const boardcastOutData = () => {
   iframeDom.value.contentWindow.postMessage({ type: 'AudioBroadcast', data: outData[0] }, '*')
 }
@@ -299,7 +303,7 @@ const onBoardcast = () => {
     interactiveLoading.value = true
     boardcastText.value = ''
   } else {
-    Toast('请输入文字')
+    Toast('Please enter text')
   }
 }
 
@@ -318,7 +322,7 @@ const onQa = () => {
     interactiveLoading.value = true
     qaText.value = ''
   } else {
-    Toast('请输入文字')
+    Toast('Please enter text')
   }
 }
 
@@ -339,14 +343,14 @@ const onRecordStart = e => {
     () => {
       rec.value = newRec
       rec.value.start()
-      console.log('开始录音')
+      console.log('start recording')
       recPower.value = {
         buffers: [],
         powerLeverTotal: 0
       }
     },
     err => {
-      console.log('录音权限已拒绝' + err)
+      console.log('Recording permission denied' + err)
     }
   )
 }
@@ -384,7 +388,7 @@ const onRecordEnd = () => {
   rec.value.stop(
     (blob, duration) => {
       const averagePower = recPower.value.powerLeverTotal / recPower.value.buffers.length
-      console.log(`已录制${duration}ms，${blob.size}字节，平均音量${averagePower}`)
+      console.log(`Recorded ${duration}ms，${blob.size}Bytes, average volume${averagePower}`)
       // 音量不能低于此设置
       // if (averagePower < 1) {
       //   Toast('声音异常，请重试')
@@ -397,7 +401,7 @@ const onRecordEnd = () => {
           interactiveLoading.value = true
         })
         .catch(err => {
-          console.log('录音错误:' + err)
+          console.log('Recording error:' + err)
         })
       // let audioRes = {
       //   blob,
@@ -413,7 +417,7 @@ const onRecordEnd = () => {
       rec.value = null
     },
     err => {
-      console.log('录音失败：' + err)
+      console.log('Recording failed:' + err)
       rec.value.close()
       rec.value = null
     }
@@ -463,7 +467,7 @@ const interactiveLoading = ref(false)
 
 // 适配safari 动态设置iframe高度
 const setIframeHeight = () => {
-  if (document.querySelector('.header')) {
+  if (document.querySelector('.header') && document.querySelector('.option-bar')) {
     const headerHeight = document.querySelector('.header').offsetHeight
     const bottomBarTop = document.querySelector('.option-bar').getBoundingClientRect().top
     document.getElementById('iframe-wrap').style.height = bottomBarTop - headerHeight + 'px'
@@ -482,7 +486,7 @@ const getQueryParams = url => {
 }
 
 // 动态设置iframe 地址
-const iframeUrl = ref('https://avatar.deepscience.cn/v3/index.html?code=ukQp+KWskbENwQ32kjcusMithZFxTWHTQd7CwskY2VoC70UKlNsVBYe0r1VIv8ROCSNnQG4WREGcJMsgI5p3HfvW15Byg49/mb9GfBnbuvHaTyC7xh+eOjOt6qYa3axw')
+const iframeUrl = ref('https://demo.motionverse.ai/avatar/v3.1/index.html?code=wK0IOM2EhXbA9ILCgAju8QL+FTzF7A8OLnbB3ss6WrNtg1yXMwCrppklLq6psQZMg4j0YuVYzgCKF9LA84KWp9BCspurNmwhk0HF7wPF5fXwpFjXTbhw80nZGdMa5N8+')
 const prevView = ref(false) // 默认为不是motionver预览
 if (getQueryParams(window.location.href).previewurl) {
   prevView.value = true
